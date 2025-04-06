@@ -121,16 +121,11 @@ def save_knowledge_graph(graph):
     nx.write_graphml(graph, KNOWLEDGE_GRAPH_PATH)
 
 # --- Step 4: User update checking ---
-def check_for_user_updates(user):
+def check_for_user_updates(user, G):
     global _article_cache
 
     user_id = user["id"]
     user_file_path = os.path.join(USER_PROFILE_DIR, f"{user_id}.json")
-
-    if not os.path.exists(KNOWLEDGE_GRAPH_PATH):
-        raise FileNotFoundError("Knowledge graph not found. Run build_knowledge_graph() first.")
-
-    G = nx.read_graphml(KNOWLEDGE_GRAPH_PATH)
 
     if _article_cache is None:
         with open(ARTICLE_METADATA_PATH, "r") as f:
@@ -195,10 +190,11 @@ def initialize_graph_and_check_updates(user_dir=USER_PROFILE_DIR):
     print("Graph Initialized")
 
 def get_update_message(KNOWLEDGE_GRAPH_PATH, users):
+    global G
     G = nx.read_graphml(KNOWLEDGE_GRAPH_PATH)
     update_article_metadata()
     update_messages = {}
     for user in users:
-        update_messages[user["id"]] = check_for_user_updates(user)
+        update_messages[user["id"]] = check_for_user_updates(user, G)
     save_knowledge_graph(G)
     return update_messages
